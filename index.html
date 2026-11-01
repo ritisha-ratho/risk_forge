@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0b0d0c">
+  <meta name="description" content="RiskForge quantitative portfolio stress testing workspace">
+  <title>RiskForge — Portfolio Stress Testing</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="grain"></div>
+  <header class="topbar">
+    <a class="brand" href="#" aria-label="RiskForge home">
+      <span class="brand-mark"><i></i><i></i><i></i></span>
+      <span>RISKFORGE</span>
+    </a>
+    <button class="ghost-button small" id="methodologyButton">Methodology <span>↗</span></button>
+  </header>
+
+  <main>
+    <section class="hero" id="onboardingView">
+      <div class="hero-copy">
+        <div class="eyebrow"><span>01</span> QUANTITATIVE RISK WORKSPACE</div>
+        <h1>Know where your<br><em>portfolio breaks.</em></h1>
+        <p>Institutional-grade stress testing for multi-asset portfolios. Measure tail risk, model market shocks, and trace every unit of risk back to its source.</p>
+        <div class="metric-strip" aria-label="Supported analyses">
+          <div><strong>99%</strong><span>Confidence level</span></div>
+          <div><strong>10K</strong><span>Monte Carlo paths</span></div>
+          <div><strong>6</strong><span>Shock regimes</span></div>
+        </div>
+      </div>
+
+      <div class="intake-card">
+        <div class="card-heading">
+          <div><span class="step-label">NEW ANALYSIS</span><h2>Choose a portfolio</h2></div>
+          <span class="secure-pill">LOCAL PROCESSING</span>
+        </div>
+
+        <label class="drop-zone" id="dropZone" for="portfolioFile">
+          <input type="file" id="portfolioFile" accept=".csv,.pdf,text/csv,application/pdf" hidden>
+          <span class="upload-icon"><i></i><b>↑</b></span>
+          <span class="drop-title">Drop your portfolio here</span>
+          <span class="drop-subtitle">or click to browse · CSV or PDF · max 10 MB</span>
+          <span class="schema-link">CSV schema: ticker, name, value, sector</span>
+        </label>
+
+        <div class="divider"><span>OR EXPLORE A DEMO</span></div>
+
+        <div class="demo-grid">
+          <button class="demo-portfolio selected" data-portfolio="aurelia">
+            <span class="flag">UK</span>
+            <span class="demo-main"><strong>Aurelia Capital Partners</strong><small>Global Growth · 8 positions</small></span>
+            <span class="demo-value">$8.42M</span>
+            <span class="radio"></span>
+          </button>
+          <button class="demo-portfolio" data-portfolio="northstar">
+            <span class="flag">SG</span>
+            <span class="demo-main"><strong>Northstar Family Office</strong><small>Balanced Global · 9 positions</small></span>
+            <span class="demo-value">$12.68M</span>
+            <span class="radio"></span>
+          </button>
+        </div>
+
+        <div class="config-row">
+          <label>Horizon<select id="horizonSelect"><option value="1">1 trading day</option><option value="10">10 trading days</option><option value="20">20 trading days</option></select></label>
+          <label>Confidence<select id="confidenceSelect"><option value="0.95">95%</option><option value="0.975">97.5%</option><option value="0.99" selected>99%</option></select></label>
+        </div>
+
+        <button class="primary-button" id="analyzeButton"><span>RUN STRESS TEST</span><b>→</b></button>
+        <p class="privacy-note">Your portfolio stays in this browser. No files are uploaded to a server.</p>
+      </div>
+    </section>
+
+    <section class="analysis-view hidden" id="analysisView" aria-live="polite">
+      <div class="analysis-head">
+        <div><span class="eyebrow"><span>02</span> ANALYSIS IN PROGRESS</span><h2>Forging your risk model<span class="blink">_</span></h2></div>
+        <span class="elapsed" id="elapsedTime">00:00.0</span>
+      </div>
+      <div class="analysis-grid">
+        <div class="simulation-stage">
+          <canvas id="simulationCanvas"></canvas>
+          <div class="sim-overlay"><span id="pathCount">0</span><small>PATHS SIMULATED</small></div>
+          <div class="sim-axis"><span>+3σ</span><span>EXPECTED</span><span>−3σ</span></div>
+        </div>
+        <div class="pipeline-panel">
+          <div class="pipeline-header"><span>ANALYSIS PIPELINE</span><span id="pipelineProgress">0%</span></div>
+          <div class="pipeline-progress"><i id="progressBar"></i></div>
+          <div class="pipeline-steps" id="pipelineSteps">
+            <div data-step="0"><span class="step-status"></span><p><strong>Portfolio normalization</strong><small>Mapping securities and market values</small></p><b>WAITING</b></div>
+            <div data-step="1"><span class="step-status"></span><p><strong>Market data calibration</strong><small>Estimating returns and volatility</small></p><b>WAITING</b></div>
+            <div data-step="2"><span class="step-status"></span><p><strong>Correlation matrix</strong><small>Cholesky factorization</small></p><b>WAITING</b></div>
+            <div data-step="3"><span class="step-status"></span><p><strong>Monte Carlo simulation</strong><small>Generating correlated price paths</small></p><b>WAITING</b></div>
+            <div data-step="4"><span class="step-status"></span><p><strong>Tail-risk extraction</strong><small>Computing VaR and Expected Shortfall</small></p><b>WAITING</b></div>
+            <div data-step="5"><span class="step-status"></span><p><strong>Risk attribution</strong><small>Ranking marginal contributions</small></p><b>WAITING</b></div>
+          </div>
+          <div class="terminal" id="terminal"><span>riskforge/kernel ready</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="dashboard hidden" id="dashboardView">
+      <div class="dashboard-header">
+        <div>
+          <button class="back-button" id="newAnalysisButton">← NEW ANALYSIS</button>
+          <div class="eyebrow"><span>03</span> RISK ANALYSIS COMPLETE</div>
+          <h2 id="portfolioName">Aurelia Capital Partners</h2>
+          <p id="portfolioMeta">Global Growth · 8 positions · USD</p>
+        </div>
+        <div class="header-actions">
+          <button class="ghost-button" id="exportDataButton">Export data</button>
+          <button class="primary-button compact" id="downloadReportButton"><span>DOWNLOAD PDF REPORT</span><b>↓</b></button>
+        </div>
+      </div>
+
+      <div class="risk-banner">
+        <div class="risk-grade"><span>PORTFOLIO RISK</span><strong id="riskGrade">ELEVATED</strong><small><i></i> Monitoring recommended</small></div>
+        <div class="key-metric"><span>VALUE AT RISK · 99%</span><strong id="varMetric">−$318,400</strong><small id="varPct">3.78% of portfolio</small></div>
+        <div class="key-metric"><span>CONDITIONAL VAR · 99%</span><strong id="cvarMetric">−$447,100</strong><small>Expected loss beyond VaR</small></div>
+        <div class="key-metric"><span>DIVERSIFICATION RATIO</span><strong id="divMetric">1.42×</strong><small id="divLabel">Moderate benefit</small></div>
+      </div>
+
+      <div class="diagnostic-strip" aria-label="Advanced risk statistics">
+        <div><span>ANNUALIZED VOLATILITY</span><strong id="volMetric">—</strong><small>Full covariance estimate</small></div>
+        <div><span>PORTFOLIO BETA</span><strong id="betaMetric">—</strong><small>Market sensitivity</small></div>
+        <div><span>SHARPE / SORTINO</span><strong id="efficiencyMetric">—</strong><small>Risk-adjusted efficiency</small></div>
+        <div><span>EXPECTED MAX DRAWDOWN</span><strong id="drawdownMetric">—</strong><small>Modelled peak-to-trough</small></div>
+        <div><span>EFFECTIVE POSITIONS</span><strong id="breadthMetric">—</strong><small>HHI-adjusted breadth</small></div>
+        <div><span>LIQUIDITY SCORE</span><strong id="liquidityMetric">—</strong><small>Capacity proxy / 100</small></div>
+      </div>
+
+      <nav class="tab-bar" aria-label="Risk analysis sections">
+        <button class="active" data-tab="overview">Overview</button>
+        <button data-tab="stress">Stress scenarios</button>
+        <button data-tab="correlation">Correlations</button>
+        <button data-tab="attribution">Risk attribution</button>
+        <button data-tab="diagnostics">Diagnostics</button>
+      </nav>
+
+      <div class="tab-panel active" id="overviewPanel">
+        <div class="dashboard-grid">
+          <article class="panel distribution-panel">
+            <div class="panel-title"><div><span>MONTE CARLO DISTRIBUTION</span><h3>Projected one-day P&amp;L</h3></div><span class="legend"><i></i> 10,000 simulations</span></div>
+            <canvas id="distributionCanvas"></canvas>
+            <div class="chart-labels"><span id="lossLabel">−$520K</span><span>$0</span><span id="gainLabel">+$380K</span></div>
+          </article>
+          <article class="panel scenario-preview">
+            <div class="panel-title"><div><span>STRESS SNAPSHOT</span><h3>Historical shock impact</h3></div><button data-open-tab="stress">VIEW ALL →</button></div>
+            <div class="shock-row"><span><i class="severity extreme"></i><b>2008 Credit Crisis</b></span><strong id="shock2008">−31.8%</strong></div>
+            <div class="shock-track"><i id="shockBar1"></i></div>
+            <div class="shock-row"><span><i class="severity high"></i><b>2020 Pandemic</b></span><strong id="shock2020">−22.4%</strong></div>
+            <div class="shock-track"><i id="shockBar2"></i></div>
+            <div class="shock-row"><span><i class="severity medium"></i><b>Rate shock +200bps</b></span><strong id="shockRates">−12.1%</strong></div>
+            <div class="shock-track"><i id="shockBar3"></i></div>
+            <p class="insight"><span>!</span><b>Concentration warning</b><small>Growth assets amplify losses under liquidity stress.</small></p>
+          </article>
+          <article class="panel contributors-panel">
+            <div class="panel-title"><div><span>RISK CONTRIBUTORS</span><h3>Who drives portfolio risk?</h3></div><button data-open-tab="attribution">DETAILS →</button></div>
+            <div id="contributorsPreview"></div>
+          </article>
+          <article class="panel composition-panel">
+            <div class="panel-title"><div><span>PORTFOLIO COMPOSITION</span><h3>Sector exposure</h3></div></div>
+            <div class="donut-wrap"><div class="donut" id="sectorDonut"><span><strong id="positionCount">8</strong><small>POSITIONS</small></span></div><div class="donut-legend" id="sectorLegend"></div></div>
+          </article>
+        </div>
+      </div>
+
+      <div class="tab-panel" id="stressPanel">
+        <div class="section-intro"><div><span>SCENARIO LIBRARY</span><h3>Six ways the market can break</h3></div><p>Each scenario applies correlated factor shocks to current holdings. Values are modelled estimates, not forecasts.</p></div>
+        <div class="scenario-grid" id="scenarioGrid"></div>
+      </div>
+
+      <div class="tab-panel" id="correlationPanel">
+        <div class="section-intro"><div><span>CORRELATION STRUCTURE</span><h3>Where diversification disappears</h3></div><p>Pairwise correlations estimated from synthetic daily returns for this interactive prototype.</p></div>
+        <div class="correlation-layout"><div class="panel heatmap-wrap" id="heatmap"></div><div class="panel corr-insights" id="corrInsights"></div></div>
+      </div>
+
+      <div class="tab-panel" id="attributionPanel">
+        <div class="section-intro"><div><span>COMPONENT VAR</span><h3>Risk, traced to its source</h3></div><p>Contribution combines position weight, volatility, and correlation with the total portfolio.</p></div>
+        <div class="panel table-wrap"><table><thead><tr><th>Asset</th><th>Market value</th><th>Weight</th><th>Volatility</th><th>Risk contribution</th><th>Signal</th></tr></thead><tbody id="riskTableBody"></tbody></table></div>
+      </div>
+
+      <div class="tab-panel" id="diagnosticsPanel">
+        <div class="section-intro"><div><span>PORTFOLIO DIAGNOSTICS</span><h3>Risk beneath the headline number</h3></div><p>Concentration, factor, liquidity and covariance diagnostics identify structural weaknesses that VaR alone can miss.</p></div>
+        <div class="diagnostics-grid">
+          <article class="panel factor-panel"><div class="panel-title"><div><span>STYLE FACTORS</span><h3>Normalized factor exposure</h3></div></div><div id="factorBars"></div></article>
+          <article class="panel decomposition-panel"><div class="panel-title"><div><span>VOLATILITY DECOMPOSITION</span><h3>Systematic vs idiosyncratic</h3></div></div><div class="split-ring" id="splitRing"><span><strong id="systematicMetric">—</strong><small>SYSTEMATIC</small></span></div><div class="split-legend"><span><i></i>Systematic risk</span><span><i></i>Idiosyncratic risk</span></div></article>
+          <article class="panel model-panel"><div class="panel-title"><div><span>MODEL HEALTH</span><h3>Covariance diagnostics</h3></div></div><div id="modelDiagnostics"></div></article>
+          <article class="panel concentration-panel"><div class="panel-title"><div><span>CONCENTRATION &amp; LIQUIDITY</span><h3>Capacity constraints</h3></div></div><div id="concentrationDiagnostics"></div></article>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div class="modal hidden" id="methodologyModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal-card"><button class="modal-close" id="closeModal">×</button><span class="eyebrow"><span>M</span> MODEL NOTES</span><h2 id="modalTitle">Transparent by design.</h2><p>RiskForge uses a parametric covariance model to generate correlated log-normal price paths. Value at Risk is the selected loss quantile; Conditional VaR is the average loss beyond that threshold.</p><div class="method-grid"><div><strong>10,000</strong><span>Simulated paths</span></div><div><strong>252</strong><span>Trading days annualized</span></div><div><strong>6</strong><span>Factor shock regimes</span></div><div><strong>99%</strong><span>Default confidence</span></div></div><small>Prototype note: demo market data and correlations are synthetic and must not be used for investment decisions.</small></div>
+  </div>
+  <div class="toast" id="toast" role="status"></div>
+  <script src="app.js"></script>
+</body>
+</html>

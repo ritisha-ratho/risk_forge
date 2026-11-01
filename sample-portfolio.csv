@@ -1,0 +1,7 @@
+ticker,name,value,sector
+MSFT,Microsoft,1250000,Technology
+JPM,JPMorgan Chase,950000,Financials
+NOVO,Novo Nordisk,875000,Healthcare
+SHEL,Shell,725000,Energy
+GLD,SPDR Gold Shares,600000,Alternatives
+BND,Vanguard Total Bond,1100000,Fixed Income
